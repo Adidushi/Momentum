@@ -37,7 +37,7 @@ scene.height = 900
 
 bullets = []
 asteroids = []
-
+lives = 5
 spd = vec(0, 0, 0)
 asteroidCounter = 0
 
@@ -177,37 +177,53 @@ def bulletHit():
 def playerHit():
     global asteroids
     global player
+    global lives
 
     for asteroid in asteroids:
         if mag(player.pos - asteroid.projectile.pos) <= player.radius+asteroid.projectile.radius:
             asteroid.projectile.visible = False
             asteroids.remove(asteroid)
-            print("ow")
+            lives -= 1
+            print("ow there are now", lives, "lives left")
+            if lives == 0:
+                quitGame()
+
 
 
 # START AND STUFF
 
+def quitGame():
+    scene.pause('you lost! click to quit lol u sux')
+    scene.delete()
+
+def gameLoop():
+    global spd
+    while True:
+        rate(120)
+        # Check player speed and bounds
+        playerBounds(player)
+        # Add speed
+        player.pos += spd
+        spd *= 0.92
+        # Move bullets
+        moveBullets(bullets)
+        # Check all bullets and remove
+        bulletCheck(bullets)
+        # Check and WRECK the asteroids
+        checkAsteroids()
+        # Spawn asteroid once every 2 seconds
+        spawnAsteroid()
+        # Move asteroids
+        moveAsteroids()
+        # Check for any collision between bullets and asteroids
+        bulletHit()
+        # Check for player collision with asteroids
+        playerHit()
+
+scene.autoscale = False
+
+scene.pause("clek to stort")
 scene.bind('click', shoot)
 
-while True:
-    rate(120)
-    time.sleep(1 / 120)
-    # Check player speed and bounds
-    playerBounds(player)
-    # Add speed
-    player.pos += spd
-    spd *= 0.92
-    # Move bullets
-    moveBullets(bullets)
-    # Check all bullets and remove
-    bulletCheck(bullets)
-    # Check and WRECK the asteroids
-    checkAsteroids()
-    # Spawn asteroid once every 2 seconds
-    spawnAsteroid()
-    # Move asteroids
-    moveAsteroids()
-    # Check for any collision between bullets and asteroids
-    bulletHit()
-    # Check for player collision with asteroids
-    playerHit()
+gameThread = threading.Thread(target=gameLoop())
+gameThread.start()
