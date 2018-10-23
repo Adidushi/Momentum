@@ -25,8 +25,8 @@ BULLETCOLOR = color.cyan
 PLAYERCOLOR = color.blue
 ASTCOLOR = color.green
 WALLSIZE = 5
-ASTSECONDS = 0.5
-ASTSPEED = 0.05
+ASTSECONDS = 1
+ASTSPEED = 0.01
 
 scene.userpan = False
 scene.userzoom = False
@@ -35,11 +35,14 @@ scene.fullscreen = True
 scene.width = 900
 scene.height = 900
 
+points = 1
 bullets = []
 asteroids = []
 lives = 5
+scene.title = "Lives:", lives*"♥", "Points:", points
 spd = vec(0, 0, 0)
 asteroidCounter = 0
+
 
 player = sphere(radius=0.5, color=PLAYERCOLOR)
 
@@ -163,6 +166,7 @@ def moveAsteroids():
 def bulletHit():
     global bullets
     global asteroids
+    global points
 
     for bullet in bullets:
         for asteroid in asteroids:
@@ -172,12 +176,14 @@ def bulletHit():
                 bullet.projectile.visible = False
                 bullets.remove(bullet)
                 print("IMPACT HOLY SHET")
+                points += 10000
 
 
 def playerHit():
     global asteroids
     global player
     global lives
+    global points
 
     for asteroid in asteroids:
         if mag(player.pos - asteroid.projectile.pos) <= player.radius+asteroid.projectile.radius:
@@ -185,10 +191,11 @@ def playerHit():
             asteroids.remove(asteroid)
             lives -= 1
             print("ow there are now", lives, "lives left")
-            if lives == 0:
-                quitGame()
 
-
+def calcPoints():
+    global points
+    points += 100
+    scene.title = "Lives:", lives * "♥", "Points:", points
 
 # START AND STUFF
 
@@ -198,7 +205,9 @@ def quitGame():
 
 def gameLoop():
     global spd
-    while True:
+    global lives
+
+    while lives > 0:
         rate(120)
         # Check player speed and bounds
         playerBounds(player)
@@ -219,6 +228,11 @@ def gameLoop():
         bulletHit()
         # Check for player collision with asteroids
         playerHit()
+        # Add points
+        calcPoints()
+
+    scene.title = "Lives: NONE Points:", points
+    quitGame()
 
 scene.autoscale = False
 
